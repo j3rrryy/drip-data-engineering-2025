@@ -1,0 +1,80 @@
+@startuml
+skinparam linetype ortho
+
+entity Users {
+    * id uuid <<PK>>
+    ---
+    * email varchar(100) <<unique>> <<not null>>
+    * password_hash varchar(255) <<not null>>
+    * first_name varchar(40) <<not null>>
+    * last_name varchar(40) <<not null>>
+    * gender enum('male', 'female') <<not null>>
+    * birth_date timestamp <<not null>>
+    * phone_number varchar(25) <<unique>> <<not null>>
+    * delivery_address text <<not null>>
+    * avatar_url varchar(255)
+    * registered timestamp <<not null>> <<default now()>>
+}
+
+entity Orders {
+    * id uuid <<PK>>
+    ---
+    * user_id uuid <<FK>> <<not null>>
+    * status enum('packing', 'in_delivery', 'received', 'cancelled') <<not null>>
+    * total_price decimal(10,2) <<not null>>
+    * created timestamp <<not null>> <<default now()>>
+}
+
+entity OrderItems {
+    * order_id uuid <<FK>> <<PK>>
+    * product_id uuid <<FK>> <<PK>>
+    ---
+    * quantity integer <<not null>>
+    * price_at_order decimal(10,2) <<not null>>
+}
+
+entity CartItems {
+    * user_id uuid <<FK>> <<PK>>
+    * product_id uuid <<FK>> <<PK>>
+    ---
+    * quantity integer <<not null>>
+}
+
+entity FavoriteItems {
+    * user_id uuid <<FK>> <<PK>>
+    * product_id uuid <<FK>> <<PK>>
+}
+
+entity Products {
+    * id uuid <<PK>>
+    ---
+    * name varchar(255) <<not null>>
+    * category_id uuid <<FK>> <<not null>>
+    * description text
+    * price decimal(10,2) <<not null>>
+    * rating decimal(2,1)
+    * image_url varchar(255)
+    * stock integer <<not null>>
+}
+
+entity Categories {
+    * id uuid <<PK>>
+    ---
+    * name varchar(255) <<unique>> <<not null>>
+}
+
+Categories ||--o{ Products : "category_id"
+Users ||--o{ Orders : "user_id"
+Orders ||--o{ OrderItems : "order_id"
+Products ||--o{ OrderItems : "product_id"
+Users ||--o{ CartItems : "user_id"
+Products ||--o{ CartItems : "product_id"
+Users ||--o{ FavoriteItems : "user_id"
+Products ||--o{ FavoriteItems : "product_id"
+
+Users -[hidden]-> CartItems
+Users -[hidden]-> FavoriteItems
+Orders -[hidden]-> OrderItems
+OrderItems -[hidden]-> Products
+Products -[hidden]-> Categories
+@enduml
